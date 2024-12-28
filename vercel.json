@@ -5,11 +5,6 @@
         "src": "api/main.py",
         "use": "@vercel/python"
       }
-    ],
-    "functions": {
-      "api/main.py": {
-        "runtime": "python3.9"
-      }
-    }
+    ]
   }
   
