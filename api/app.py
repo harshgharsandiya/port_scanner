@@ -71,6 +71,3 @@ def stop_scan():
 @app.route('/results')
 def results():
     return jsonify(scan_results), 200
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
