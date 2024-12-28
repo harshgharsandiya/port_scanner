@@ -1,7 +1,7 @@
 {
     "version": 2,
     "functions": {
-      "api/scan.py": {
+      "api/main.py": {
         "runtime": "python3.9"
       }
     }
