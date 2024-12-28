@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Port Scanner</title>
+    <script>
+        function startScan() {
+            const hostname = document.getElementById('hostname').value;
+            const startPort = document.getElementById('start_port').value;
+            const endPort = document.getElementById('end_port').value;
+            
+            fetch('/scan', {
+                method: 'POST',
+                body: new URLSearchParams({
+                    'hostname': hostname,
+                    'start_port': startPort,
+                    'end_port': endPort
+                }),
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    document.getElementById('status').innerText = data.message;
+                    setInterval(getResults, 1000);
+                } else {
+                    document.getElementById('status').innerText = data.error;
+                }
+            });
+        }
+
+        function getResults() {
+            fetch('/results')
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = data.join('<br>');
+            });
+        }
+
+        function stopScan() {
+            fetch('/stop', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('status').innerText = data.message;
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Port Scanner</h1>
+    <form onsubmit="event.preventDefault(); startScan();">
+        <label for="hostname">Hostname/IP:</label>
+        <input type="text" id="hostname" required><br><br>
+
+        <label for="start_port">Start Port:</label>
+        <input type="number" id="start_port" required><br><br>
+
+        <label for="end_port">End Port:</label>
+        <input type="number" id="end_port" required><br><br>
+
+        <button type="submit">Start Scan</button>
+        <button type="button" onclick="stopScan()">Stop Scan</button>
+    </form>
+
+    <p id="status"></p>
+    <div id="results"></div>
+</body>
+</html>
