@@ -2,7 +2,6 @@ import sys
 import socket
 import threading
 from flask import Flask, render_template, request, jsonify
-import time
 
 app = Flask(__name__)
 
@@ -39,30 +38,39 @@ def scan():
     global scan_results, stop_scan_event
     scan_results = []
     stop_scan_event.clear()
+
+    # Get JSON data from the request
+    data = request.get_json()
     
-    target = request.form.get('hostname')
+    if not data:
+        return jsonify({"error": "Invalid request, JSON data required!"}), 400
+    
+    target = data.get('hostname')
+    if not target:
+        return jsonify({"error": "Hostname is required!"}), 400
+    
     try:
         target_ip = socket.gethostbyname(target)
     except socket.gaierror:
-        return jsonify({"error": "Hostname could not be resolved!"})
+        return jsonify({"error": "Hostname could not be resolved!"}), 400
     
     try:
-        start_port = int(request.form.get('start_port'))
-        end_port = int(request.form.get('end_port'))
+        start_port = int(data.get('start_port'))
+        end_port = int(data.get('end_port'))
     except ValueError:
-        return jsonify({"error": "Invalid port range"})
+        return jsonify({"error": "Invalid port range!"}), 400
     
     threading.Thread(target=scan_ports, args=(target_ip, start_port, end_port)).start()
-    return jsonify({"message": f"Scanning {target_ip} from port {start_port} to {end_port}..."})
+    return jsonify({"message": f"Scanning {target_ip} from port {start_port} to {end_port}..."}), 200
 
 @app.route('/stop', methods=['POST'])
 def stop_scan():
     stop_scan_event.set()
-    return jsonify({"message": "Scan has been stopped."})
+    return jsonify({"message": "Scan has been stopped."}), 200
 
 @app.route('/results')
 def results():
-    return jsonify(scan_results)
+    return jsonify(scan_results), 200
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
